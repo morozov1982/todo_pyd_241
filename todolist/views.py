@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
 from todolist.models import TodoList, Category
@@ -36,4 +37,23 @@ def todo(request):
     return render(request, 'todo.html', context)
 
 def category(request):
-    pass
+    categories = Category.objects.all()
+    if request.method == 'POST':
+
+        if 'Add' in request.POST:
+            name = request.POST['name']
+            category = Category(name=name)
+            category.save()
+            return redirect('/category/')
+
+        if 'Delete' in request.POST:
+            check = request.POST.getlist('check')
+            for i in range(len(check)):
+                try:
+                    categ = Category.objects.filter(id=int(check[i]))
+                    categ.delete()
+                except BaseException:
+                    return HttpResponse(
+                        '<h1>Сначала удалите карточки с этими категориями</h1>')
+
+    return render(request, 'category.html', {'categories': categories})
